@@ -23,12 +23,16 @@ ament_target_dependencies(number_counter rclcpp example_interfaces)
 add_executable(led_panel src/led_panel.cpp)
 ament_target_dependencies(led_panel rclcpp example_interfaces robot_interfaces)
 
+add_executable(battery src/battery.cpp)
+ament_target_dependencies(battery rclcpp example_interfaces robot_interfaces)
+
 
 install(TARGETS
   my_first_node
   number_publisher
   number_counter
   led_panel
+  battery
   DESTINATION lib/${PROJECT_NAME}
 )
 
