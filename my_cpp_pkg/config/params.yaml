@@ -1,0 +1,5 @@
+/led_panel:
+  ros__parameters:
+    led1: true
+    led2: false
+    led3: true
