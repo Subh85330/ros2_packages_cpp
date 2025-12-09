@@ -138,7 +138,7 @@ class IndoorLidarOdomNode : public rclcpp::Node
 {
 public:
   IndoorLidarOdomNode()
-  : Node("indoor_lidar_odom_node"),
+  : Node("indoor_lidar_odom_ekf_node"),
     ekf_(),
     have_last_imu_time_(false),
     have_last_scan_(false),
@@ -183,7 +183,7 @@ private:
     std::vector<Point2D> scan2d;
     scan2d.reserve(cloud.width);
 
-    const float max_abs_z = 800.0f;
+    const float max_abs_z = 0.5f;
     const int stride = 4;
 
     sensor_msgs::PointCloud2ConstIterator<float> iter_x(cloud, "x");

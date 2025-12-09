@@ -13,12 +13,12 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io registration)
+find_package(pcl_conversions REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 
 add_executable(indoor_lidar_odom_node src/indoor_lidar_odom_node.cpp)
-add_executable(indoor_lidar_odom_ekf_node src/indoor_lidar_odom_ekf_node.cpp)
-# add_executable(record_odom_to_csv src/record_odom_to_csv.py)
 ament_target_dependencies(indoor_lidar_odom_node
   rclcpp
   sensor_msgs
@@ -26,7 +26,11 @@ ament_target_dependencies(indoor_lidar_odom_node
   geometry_msgs
   tf2
   tf2_ros
+  pcl_conversions
 )
+
+add_executable(indoor_lidar_odom_ekf_node src/indoor_lidar_odom_ekf_node.cpp)
+# add_executable(record_odom_to_csv src/record_odom_to_csv.py)
 ament_target_dependencies(indoor_lidar_odom_ekf_node
   rclcpp
   sensor_msgs

@@ -1,0 +1,6 @@
+[0.000000] (-) TimerEvent: {}
+[0.000231] (-) JobUnselected: {'identifier': 'fusion_camera_gps_imu'}
+[0.000263] (-) JobUnselected: {'identifier': 'indoor_lidar_odom_cpp'}
+[0.000322] (-) JobUnselected: {'identifier': 'my_cpp_pkg'}
+[0.000338] (-) JobUnselected: {'identifier': 'robot_interfaces'}
+[0.000442] (-) EventReactorShutdown: {}
