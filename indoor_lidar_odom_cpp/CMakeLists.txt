@@ -38,15 +38,34 @@ ament_target_dependencies(indoor_lidar_odom_ekf_node
   geometry_msgs
   tf2
   tf2_ros
+  pcl_conversions
 )
 
 target_link_libraries(indoor_lidar_odom_ekf_node
   Eigen3::Eigen
+  ${PCL_LIBRARIES}
 )
+
+include_directories(
+  ${PCL_INCLUDE_DIRS}
+)
+
+add_executable(lidar_odom_publisher src/lidar_odom_publisher.cpp)
+ament_target_dependencies(lidar_odom_publisher
+  rclcpp
+  sensor_msgs
+  nav_msgs
+  geometry_msgs
+  tf2
+  tf2_ros
+  pcl_conversions
+)
+
 
 install(TARGETS
   indoor_lidar_odom_node
   indoor_lidar_odom_ekf_node
+  lidar_odom_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 

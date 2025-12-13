@@ -21,12 +21,12 @@ class IndoorLidarOdomNode : public rclcpp::Node
 {
 public:
     IndoorLidarOdomNode()
-    : Node("indoor_lidar_odom_node"),
-      x_(0.0),
-      y_(0.0),
-      yaw_(0.0),
-      have_last_imu_time_(false),
-      have_prev_cloud_(false)
+        : Node("indoor_lidar_odom_node"),
+          x_(0.0),
+          y_(0.0),
+          yaw_(0.0),
+          have_last_imu_time_(false),
+          have_prev_cloud_(false)
     {
         lidar_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
             "/livox/amr/lidar",
@@ -62,7 +62,8 @@ private:
     {
         rclcpp::Time current_time = msg->header.stamp;
 
-        if (!have_last_imu_time_) {
+        if (!have_last_imu_time_)
+        {
             last_imu_time_ = current_time;
             have_last_imu_time_ = true;
             return;
@@ -71,7 +72,8 @@ private:
         double dt = (current_time - last_imu_time_).seconds();
         last_imu_time_ = current_time;
 
-        if (dt <= 0.0) {
+        if (dt <= 0.0)
+        {
             return;
         }
 
@@ -92,23 +94,25 @@ private:
         double &dy_lidar,
         double &dyaw_lidar)
     {
-        if (!prev_cloud || !curr_cloud || prev_cloud->empty() || curr_cloud->empty()) {
+        if (!prev_cloud || !curr_cloud || prev_cloud->empty() || curr_cloud->empty())
+        {
             return false;
         }
 
         pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-        icp.setInputSource(curr_cloud);   // current scan
-        icp.setInputTarget(prev_cloud);   // previous scan
+        icp.setInputSource(curr_cloud); // current scan
+        icp.setInputTarget(prev_cloud); // previous scan
 
         icp.setMaximumIterations(30);
-        icp.setMaxCorrespondenceDistance(1.0);   // meters
+        icp.setMaxCorrespondenceDistance(1.0); // meters
         icp.setTransformationEpsilon(1e-6);
         icp.setEuclideanFitnessEpsilon(1e-6);
 
         pcl::PointCloud<pcl::PointXYZ> aligned;
         icp.align(aligned);
 
-        if (!icp.hasConverged()) {
+        if (!icp.hasConverged())
+        {
             RCLCPP_WARN(this->get_logger(), "ICP did not converge.");
             return false;
         }
@@ -116,10 +120,10 @@ private:
         Eigen::Matrix4f T = icp.getFinalTransformation();
         // T maps curr -> prev: p_prev = T * p_curr
 
-        dx_lidar = T(0,3);
-        dy_lidar = T(1,3);
-        double r00 = T(0,0);
-        double r10 = T(1,0);
+        dx_lidar = T(0, 3);
+        dy_lidar = T(1, 3);
+        double r00 = T(0, 0);
+        double r10 = T(1, 0);
         dyaw_lidar = std::atan2(r10, r00);
 
         return true;
@@ -142,10 +146,12 @@ private:
         double dy_lidar = 0.0;
         double dyaw_lidar = 0.0;
 
-        if (have_prev_cloud_) {
+        if (have_prev_cloud_)
+        {
             bool ok = estimateMotionICP(prev_cloud_, curr_cloud, dx_lidar, dy_lidar, dyaw_lidar);
 
-            if (ok) {
+            if (ok)
+            {
                 // You can combine ICP yaw with IMU yaw if you want.
                 // For now, we trust IMU yaw for orientation and let ICP provide translation only.
                 // If you want, you can do: yaw_ += dyaw_lidar; then wrap.
@@ -153,12 +159,21 @@ private:
                 // dx_lidar, dy_lidar are in LiDAR frame at previous time.
                 // Assuming LiDAR frame is aligned with base_link (x forward, y left),
                 // transform this increment into odom frame using yaw_ at previous step.
+                // Heuristic: pure rotation if rotation is big relative to translation
+                double rot_mag = std::fabs(dyaw_lidar);            // ICP-estimated rotation
+                double trans_mag = std::hypot(dx_lidar, dy_lidar); // ICP-estimated translation
 
+                if (rot_mag > 0.05 && trans_mag < 0.10)
+                { // tune these thresholds
+                    // Treat as pure rotation: ignore translation
+                    dx_lidar = 0.0;
+                    dy_lidar = 0.0;
+                }
                 double c = std::cos(yaw_);
                 double s = std::sin(yaw_);
 
-                double dx_global =  -(c * dx_lidar - s * dy_lidar);
-                double dy_global =  -(s * dx_lidar + c * dy_lidar);
+                double dx_global = -(c * dx_lidar - s * dy_lidar);
+                double dy_global = -(s * dx_lidar + c * dy_lidar);
 
                 x_ += dx_global;
                 y_ += dy_global;
@@ -167,7 +182,9 @@ private:
                     this->get_logger(),
                     "ICP motion: dx_lidar=%.3f dy_lidar=%.3f -> dx=%.3f dy=%.3f -> x=%.3f y=%.3f",
                     dx_lidar, dy_lidar, dx_global, dy_global, x_, y_);
-            } else {
+            }
+            else
+            {
                 RCLCPP_WARN(this->get_logger(),
                             "ICP motion estimate failed for this frame.");
             }
